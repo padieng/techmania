@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Tech Mania</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Admin Panel</h1>
+    <nav><a href="index.html">← Back to Home</a></nav>
+  </header>
+
+  <main>
+    <h2>Add New Product</h2>
+    <form id="add-product-form">
+      <input type="text" id="name" placeholder="Name" required><br>
+      <input type="text" id="description" placeholder="Description"><br>
+      <input type="text" id="category" placeholder="Category"><br>
+      <input type="number" id="price" placeholder="Price" required><br>
+      <input type="text" id="image_url" placeholder="Image filename (e.g. product1.jpg)"><br>
+      <button type="submit">Add Product</button>
+    </form>
+
+    <h2>Bulk Upload Products (JSON)</h2>
+    <textarea id="json-upload" rows="6" cols="50" placeholder='[{"name":"..."}]'></textarea><br>
+    <button id="upload-btn">Upload JSON</button>
+
+    <h2>All Products</h2>
+    <table id="admin-product-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Products will be inserted here -->
+      </tbody>
+    </table>
+  </main>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+[
+  {
+    "name": "USB-C Hub",
+    "description": "7-in-1 USB-C Adapter",
+    "category": "Accessories",
+    "price": 39.99,
+    "image_url": "hub.jpg"
+  },
+  {
+    "name": "Wireless Keyboard",
+    "description": "Compact Bluetooth keyboard",
+    "category": "Accessories",
+    "price": 49.99,
+    "image_url": "keyboard.jpg"
+  }
+]

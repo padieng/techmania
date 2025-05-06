@@ -1,70 +1,78 @@
-// Add a new single product
-document.getElementById('add-product-form').addEventListener('submit', function(e) {
-  e.preventDefault();
+const UNSPLASH_ACCESS_KEY = '-RAfjBg9NllH_b-9gbRHMoUG1BS85RA7zmUrRSuR-SA';
 
-  const product = {
-    name: document.getElementById('name').value,
-    description: document.getElementById('description').value,
-    category: document.getElementById('category').value,
-    price: parseFloat(document.getElementById('price').value),
-    image_url: document.getElementById('image_url').value
-  };
-
-  fetch('/api/admin/products', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(product)
-  })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      loadAdminTable(); // Reload product table after adding
-      document.getElementById('add-product-form').reset(); // Clear form
-    });
-});
-
-// Bulk upload multiple products from JSON
-document.getElementById('upload-btn').addEventListener('click', () => {
-  try {
-    const products = JSON.parse(document.getElementById('json-upload').value);
-
-    fetch('/api/admin/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ products })
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message);
-        loadAdminTable(); // Reload after upload
-        document.getElementById('json-upload').value = ''; // Clear textarea
-      });
-  } catch (error) {
-    alert('❌ Invalid JSON format. Please fix and try again.');
-  }
-});
-
-// Load all products into Admin Table
-function loadAdminTable() {
-  fetch('/api/products')
-    .then(res => res.json())
-    .then(products => {
-      const tableBody = document.querySelector('#admin-product-table tbody');
-      tableBody.innerHTML = '';
-
-      products.forEach(product => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${product.id}</td>
-          <td>${product.name}</td>
-          <td>${product.category}</td>
-          <td>$${product.price.toFixed(2)}</td>
-          <td><a href="edit.html?id=${product.id}">Edit</a></td>
-        `;
-        tableBody.appendChild(row);
-      });
-    });
+// Fetch an Unsplash image based on product name
+async function fetchUnsplashImage(query) {
+  const res = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&client_id=${UNSPLASH_ACCESS_KEY}`);
+  const data = await res.json();
+  return data.results[0]?.urls?.small || '';
 }
 
-// Initial load when page opens
-loadAdminTable();
+// Load and display all products
+fetch('/api/products')
+  .then(res => res.json())
+  .then(products => {
+    const tbody = document.querySelector('#admin-product-table tbody');
+    tbody.innerHTML = '';
+    products.forEach(p => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.name}</td>
+        <td>${p.category}</td>
+        <td>$${p.price.toFixed(2)}</td>
+        <td><a href="edit.html?id=${p.id}">Edit</a></td>
+      `;
+      tbody.appendChild(row);
+    });
+  });
+
+// Add a single product
+document.getElementById('add-product-form').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const name = document.getElementById('name').value;
+  const description = document.getElementById('description').value;
+  const category = document.getElementById('category').value;
+  const price = parseFloat(document.getElementById('price').value);
+
+  let image_url = document.getElementById('image_url').value;
+  if (!image_url) {
+    image_url = await fetchUnsplashImage(name);
+    if (!image_url) {
+      alert('No image found for that product!');
+      return;
+    }
+  }
+
+  const res = await fetch('/api/admin/products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description, category, price, image_url })
+  });
+
+  const data = await res.json();
+  alert(data.message || 'Product added!');
+  location.reload();
+});
+
+// Bulk upload from JSON textarea
+document.getElementById('upload-btn').addEventListener('click', async () => {
+  const textarea = document.getElementById('json-upload');
+  let products;
+
+  try {
+    products = JSON.parse(textarea.value);
+  } catch (err) {
+    return alert('Invalid JSON format. Please check your input.');
+  }
+
+  const res = await fetch('/api/admin/products/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(products)
+  });
+
+  const data = await res.json();
+  alert(data.message || 'Bulk upload complete!');
+  location.reload();
+});
